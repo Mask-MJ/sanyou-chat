@@ -24,7 +24,6 @@ const dataSources = computed(() => {
   return chatStore.getChatDataByUuid(props.uuid)?.data || []
 })
 const buttonDisabled = computed(() => {
-  console.log(menuValue.value, 'menuValue')
   if (['3', '4', '5'].includes(menuValue.value)) {
     // 判断是否上传文件
     if (hasUpload.value) {
@@ -110,22 +109,32 @@ const handleStop = () => {
     loading.value = false
   }
 }
-const handleBeforeUpload = (e: any) => {
+const handleBeforeUpload = () => {
   loading.value = true
+  chatStore.setUploadStatus(true)
 }
 const handleUploadFinish = (e: any) => {
-  console.log(e.event, 'event')
   const { response } = e.event.target
   if (response) {
     const result = JSON.parse(response)
     if (result.code === 200) {
-      console.log(result.data.id, '上传成功')
       hasUpload.value = true
       window.$message?.success('上传成功')
+      chatStore.setPdfByUuid(props.uuid, e.file.file)
     }
     loading.value = false
   }
+  chatStore.setUploadStatus(false)
 }
+
+watch(
+  () => chatStore.active,
+  (value) => {
+    if (value) {
+      handleStop()
+    }
+  }
+)
 
 onUnmounted(() => {
   if (loading.value) controller.abort()

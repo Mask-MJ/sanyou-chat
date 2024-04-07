@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const appStore = useAppStore()
+const chatStore = useChatStore()
 const menuValue = computed(() => appStore.menuValue)
 
 const menuOptions = [
@@ -25,7 +26,9 @@ const menuOptions = [
 ]
 
 const change = (value: string) => {
+  if (chatStore.uploading) return
   appStore.setMenuValue(value)
+  chatStore.addNewChat({ uuid: Date.now(), data: [], type: value })
 }
 </script>
 

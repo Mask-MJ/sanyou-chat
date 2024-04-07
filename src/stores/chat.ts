@@ -3,6 +3,8 @@ import { defineStore } from 'pinia'
 export interface ChatList {
   uuid: number
   data: Chat[]
+  pdf?: File
+  type: string
 }
 
 export interface Chat {
@@ -37,12 +39,18 @@ export const useChatStore = defineStore('chat', () => {
   const uuid = Date.now()
   const active = ref<number | null>(uuid)
   const history = ref<ChatList[]>([])
+  const uploading = ref<boolean>(false)
 
   const setActive = (uuid: number) => {
     active.value = uuid
   }
 
+  const setUploadStatus = (status: boolean) => {
+    uploading.value = status
+  }
+
   const addNewChat = (data: ChatList) => {
+    if (uploading.value) return
     history.value.push(data)
     active.value = data.uuid
     reloadRoute(data.uuid)
@@ -58,6 +66,13 @@ export const useChatStore = defineStore('chat', () => {
     const chat = getChatDataByUuid(uuid)
     if (chat) {
       chat.data.push(data)
+    }
+  }
+
+  const setPdfByUuid = (uuid: number, pdf: File) => {
+    const chat = getChatDataByUuid(uuid)
+    if (chat) {
+      chat.pdf = pdf
     }
   }
 
@@ -81,10 +96,13 @@ export const useChatStore = defineStore('chat', () => {
   return {
     active,
     history,
+    uploading,
     addNewChat,
     getChatDataByUuid,
     addChatByUuid,
+    setPdfByUuid,
     setActive,
+    setUploadStatus,
     deleteHistory
   }
 })

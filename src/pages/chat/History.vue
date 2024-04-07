@@ -3,15 +3,18 @@ import { router } from '@/router'
 import type { ChatList } from '@/stores/chat'
 import dayjs from 'dayjs'
 
+const appStore = useAppStore()
 const chatStore = useChatStore()
 const dataSources = computed(() => chatStore.history)
 
 const isActive = (uuid: number) => chatStore.active === uuid
 const handleAdd = () => {
-  chatStore.addNewChat({ uuid: Date.now(), data: [] })
+  chatStore.addNewChat({ uuid: Date.now(), data: [], type: appStore.menuValue })
 }
 const handleSelect = (item: ChatList) => {
+  if (chatStore.uploading) return
   chatStore.setActive(item.uuid)
+  appStore.setMenuValue(item.type)
   router.push(`/chat/${item.uuid}`)
 }
 const handleDelete = (index: number, event: MouseEvent) => {
@@ -20,12 +23,12 @@ const handleDelete = (index: number, event: MouseEvent) => {
 }
 
 const getDay = (uuid: number) => {
-  return dayjs(uuid).format('YYYY-MM-DD')
+  return dayjs(uuid).format('YYYY-MM-DD HH:mm:ss')
 }
 </script>
 
 <template>
-  <div class="flex flex-col h-full w-60 border-r border-r-gray-2">
+  <div class="flex flex-col h-full w-100 border-r border-r-gray-2">
     <main class="flex flex-col flex-1 min-h-0">
       <div class="p-3 text-center border-b border-b-gray-2 mb-2">历史纪录</div>
       <div class="flex-1 min-h-0 pb-4 overflow-hidden">
