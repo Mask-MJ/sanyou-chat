@@ -6,15 +6,37 @@ const props = defineProps({
 })
 
 let controller = new AbortController()
+const appStore = useAppStore()
 const chatStore = useChatStore()
 
 const query = ref<string>('')
 const loading = ref<boolean>(false)
+const hasUpload = ref<boolean>(false)
 
-const dataSources = computed(() => chatStore.getChatDataByUuid(props.uuid)?.data || [])
-const buttonDisabled = computed(() => {
-  return loading.value || !query.value || query.value.trim() === ''
+const params: any = {
+  prev_id: '',
+  chunk_size: 250,
+  chunk_overlap: 50,
+  zh_title_enhance: false
+}
+
+const dataSources = computed(() => {
+  return chatStore.getChatDataByUuid(props.uuid)?.data || []
 })
+const buttonDisabled = computed(() => {
+  console.log(menuValue.value, 'menuValue')
+  if (['3', '4', '5'].includes(menuValue.value)) {
+    // 判断是否上传文件
+    if (hasUpload.value) {
+      return loading.value || !query.value || query.value.trim() === ''
+    } else {
+      return true
+    }
+  } else {
+    return loading.value || !query.value || query.value.trim() === ''
+  }
+})
+const menuValue = computed(() => appStore.menuValue)
 
 const handleEnter = (event: KeyboardEvent) => {
   if (event.key === 'Enter' && !event.shiftKey) {
@@ -41,7 +63,8 @@ const handleSubmit = async () => {
     stream: false,
     temperature: 0.7,
     query: query.value,
-    history
+    history,
+    url: '/api/chat/chat'
   }
   chatStore.addChatByUuid(props.uuid, {
     inversion: true,
@@ -84,6 +107,22 @@ const handleSubmit = async () => {
 const handleStop = () => {
   if (loading.value) {
     controller.abort()
+    loading.value = false
+  }
+}
+const handleBeforeUpload = (e: any) => {
+  loading.value = true
+}
+const handleUploadFinish = (e: any) => {
+  console.log(e.event, 'event')
+  const { response } = e.event.target
+  if (response) {
+    const result = JSON.parse(response)
+    if (result.code === 200) {
+      console.log(result.data.id, '上传成功')
+      hasUpload.value = true
+      window.$message?.success('上传成功')
+    }
     loading.value = false
   }
 }
@@ -136,10 +175,24 @@ onUnmounted(() => {
               <i class="i-ant-design:send-outlined"></i>
             </template>
           </NButton>
+          <n-upload
+            v-if="menuValue !== '1'"
+            class="w-15"
+            action="/api/knowledge_base/upload_temp_docs"
+            :data="params"
+            name="files"
+            :show-file-list="false"
+            @before-upload="handleBeforeUpload"
+            @finish="handleUploadFinish"
+          >
+            <NButton type="primary" :loading="loading">
+              <template #icon>
+                <i class="i-ant-design:upload-outlined"></i>
+              </template>
+            </NButton>
+          </n-upload>
         </div>
       </div>
     </footer>
   </div>
 </template>
-
-<style lang="" scoped></style>

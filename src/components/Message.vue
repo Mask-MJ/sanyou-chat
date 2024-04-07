@@ -4,8 +4,11 @@ import type { Chat } from '@/stores/chat'
 const props = defineProps({
   date: { type: Object as PropType<Chat>, required: true }
 })
-
-const { inversion, dateTime, content, error, loading } = props.date
+const content = computed(() => props.date.content)
+const inversion = computed(() => props.date.inversion)
+const dateTime = computed(() => props.date.dateTime)
+const error = computed(() => props.date.error)
+const loading = computed(() => props.date.loading)
 </script>
 
 <template>

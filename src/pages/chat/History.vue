@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { router } from '@/router'
 import type { ChatList } from '@/stores/chat'
+import dayjs from 'dayjs'
 
 const chatStore = useChatStore()
 const dataSources = computed(() => chatStore.history)
@@ -8,10 +10,17 @@ const isActive = (uuid: number) => chatStore.active === uuid
 const handleAdd = () => {
   chatStore.addNewChat({ uuid: Date.now(), data: [] })
 }
-const handleSelect = (item: ChatList) => chatStore.setActive(item.uuid)
+const handleSelect = (item: ChatList) => {
+  chatStore.setActive(item.uuid)
+  router.push(`/chat/${item.uuid}`)
+}
 const handleDelete = (index: number, event: MouseEvent) => {
   event.stopPropagation()
   chatStore.deleteHistory(index)
+}
+
+const getDay = (uuid: number) => {
+  return dayjs(uuid).format('YYYY-MM-DD')
 }
 </script>
 
@@ -24,7 +33,7 @@ const handleDelete = (index: number, event: MouseEvent) => {
           <div class="flex flex-col gap-2 text-sm">
             <div v-for="(item, index) of dataSources" :key="index">
               <a
-                class="relative flex items-center gap-3 px-3 py-3 break-all border border-[#E5E7EB] rounded-md cursor-pointer hover:bg-neutral-100"
+                class="relative flex items-center gap-3 pt-3 pb-8 py-3 break-all border border-[#E5E7EB] rounded-md cursor-pointer hover:bg-neutral-100"
                 :class="
                   isActive(item.uuid) && [
                     '!border-[#4b9e5f]',
@@ -35,7 +44,7 @@ const handleDelete = (index: number, event: MouseEvent) => {
                 "
                 @click="handleSelect(item)"
               >
-                <i class="i-ant-design:message-outlined"></i>
+                <i class="i-ant-design:message-outlined ml-1"></i>
                 <div
                   class="relative flex-1 overflow-hidden break-all text-ellipsis whitespace-nowrap"
                 >
@@ -51,6 +60,7 @@ const handleDelete = (index: number, event: MouseEvent) => {
                     确定删除此纪录？
                   </NPopconfirm>
                 </div>
+                <div class="absolute bottom-1 right-1">{{ getDay(item.uuid) }}</div>
               </a>
             </div>
           </div>

@@ -31,6 +31,7 @@ declare module 'vue' {
     NNotificationProvider: typeof import('naive-ui')['NNotificationProvider']
     NPopconfirm: typeof import('naive-ui')['NPopconfirm']
     NScrollbar: typeof import('naive-ui')['NScrollbar']
+    NUpload: typeof import('naive-ui')['NUpload']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SiderView: (typeof import('../src/components/LayoutSider.vue'))['default']

@@ -7,7 +7,7 @@ router.push(`/chat/${uuid}`)
 </script>
 
 <template>
-  <div>21111</div>
+  <div></div>
 </template>
 
 <style lang="" scoped></style>

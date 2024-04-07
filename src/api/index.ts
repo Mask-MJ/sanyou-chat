@@ -10,7 +10,7 @@ export function fetchChatAPIProcess<T = any>(
   }
 ) {
   return post<T>({
-    url: '/api/chat',
+    url: params.url,
     data: params,
     signal: params.signal,
     onDownloadProgress: params.onDownloadProgress

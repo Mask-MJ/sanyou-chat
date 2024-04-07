@@ -20,6 +20,7 @@ export interface History {
 }
 
 export interface RequestOptions {
+  url: string
   conversation_id: string
   history_len: number
   max_tokens: number
