@@ -53,9 +53,7 @@ const handleSubmit = async () => {
     role: item.inversion ? 'user' : 'assistant',
     content: item.content
   }))
-  const requestOptions = {
-    conversation_id: String(props.uuid) || '',
-    history_len: -1,
+  let requestOptions: RequestOptions = {
     max_tokens: 0,
     model_name: 'chatglm3-6b',
     prompt_name: 'default',
@@ -65,10 +63,20 @@ const handleSubmit = async () => {
     history,
     url: '/api/chat/chat'
   }
+  if (['1', '2'].includes(menuValue.value)) {
+    requestOptions.conversation_id = String(props.uuid) || ''
+    requestOptions.history_len = -1
+  } else if (['3', '4', '5'].includes(menuValue.value)) {
+    requestOptions.knowledge_id = chatStore.getChatDataByUuid(props.uuid)?.knowledge_id
+    requestOptions.top_k = 3
+    requestOptions.score_threshold = 1
+    requestOptions.url = '/api/chat/file_chat'
+  }
+
   chatStore.addChatByUuid(props.uuid, {
     inversion: true,
     dateTime: new Date().toLocaleString(),
-    content: query.value,
+    content: query.value || '',
     error: false,
     requestOptions
   })
@@ -85,13 +93,25 @@ const handleSubmit = async () => {
         let chunk = responseText.substring(6)
         try {
           const data = JSON.parse(chunk)
-          chatStore.addChatByUuid(props.uuid, {
-            inversion: false,
-            dateTime: new Date().toLocaleString(),
-            content: data.text,
-            error: false,
-            requestOptions
-          })
+          console.log(data)
+          if (['3', '4', '5'].includes(menuValue.value)) {
+            chatStore.addChatByUuid(props.uuid, {
+              inversion: false,
+              dateTime: new Date().toLocaleString(),
+              content: data.answer || '',
+              docs: data.docs,
+              error: false,
+              requestOptions
+            })
+          } else {
+            chatStore.addChatByUuid(props.uuid, {
+              inversion: false,
+              dateTime: new Date().toLocaleString(),
+              content: data.text || '',
+              error: false,
+              requestOptions
+            })
+          }
         } catch (error) {
           //
         }
@@ -120,7 +140,7 @@ const handleUploadFinish = (e: any) => {
     if (result.code === 200) {
       hasUpload.value = true
       window.$message?.success('上传成功')
-      chatStore.setPdfByUuid(props.uuid, e.file.file)
+      chatStore.setDataByUuid({ uuid: props.uuid, pdf: e.file.file, knowledge_id: result.data.id })
     }
     loading.value = false
   }
@@ -185,7 +205,7 @@ onUnmounted(() => {
             </template>
           </NButton>
           <n-upload
-            v-if="menuValue !== '1'"
+            v-if="['3', '4', '5'].includes(menuValue)"
             class="w-15"
             action="/api/knowledge_base/upload_temp_docs"
             :data="params"

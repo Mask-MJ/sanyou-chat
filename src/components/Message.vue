@@ -9,6 +9,7 @@ const inversion = computed(() => props.date.inversion)
 const dateTime = computed(() => props.date.dateTime)
 const error = computed(() => props.date.error)
 const loading = computed(() => props.date.loading)
+const docs = computed(() => props.date.docs)
 </script>
 
 <template>
@@ -35,6 +36,7 @@ const loading = computed(() => props.date.loading)
           :text="content"
           :loading="loading"
           :as-raw-text="inversion"
+          :docs="docs"
         />
       </div>
     </div>

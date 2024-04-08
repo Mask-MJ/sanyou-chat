@@ -5,6 +5,7 @@ export interface ChatList {
   data: Chat[]
   pdf?: File
   type: string
+  knowledge_id?: string
 }
 
 export interface Chat {
@@ -14,6 +15,7 @@ export interface Chat {
   loading?: boolean
   error?: boolean
   requestOptions: RequestOptions
+  docs?: string[]
 }
 
 export interface History {
@@ -23,8 +25,8 @@ export interface History {
 
 export interface RequestOptions {
   url: string
-  conversation_id: string
-  history_len: number
+  conversation_id?: string
+  history_len?: number
   max_tokens: number
   model_name: string
   prompt_name: string
@@ -32,6 +34,9 @@ export interface RequestOptions {
   temperature: number
   query: string
   history: History[]
+  knowledge_id?: string
+  top_k?: number
+  score_threshold?: number
 }
 
 export const useChatStore = defineStore('chat', () => {
@@ -69,10 +74,11 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  const setPdfByUuid = (uuid: number, pdf: File) => {
-    const chat = getChatDataByUuid(uuid)
+  const setDataByUuid = (params: { uuid: number; pdf?: File; knowledge_id?: string }) => {
+    const chat = getChatDataByUuid(params.uuid)
     if (chat) {
-      chat.pdf = pdf
+      chat.pdf = params.pdf
+      chat.knowledge_id = params.knowledge_id
     }
   }
 
@@ -100,7 +106,7 @@ export const useChatStore = defineStore('chat', () => {
     addNewChat,
     getChatDataByUuid,
     addChatByUuid,
-    setPdfByUuid,
+    setDataByUuid,
     setActive,
     setUploadStatus,
     deleteHistory

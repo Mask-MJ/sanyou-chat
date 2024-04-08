@@ -8,11 +8,12 @@ interface Props {
   inversion?: boolean
   error?: boolean
   text?: string
+  docs?: string[]
   loading?: boolean
   asRawText?: boolean
 }
-
 const props = defineProps<Props>()
+console.log(props.docs)
 
 const textRef = ref<HTMLElement>()
 
@@ -69,6 +70,9 @@ function highlightBlock(str: string, lang?: string) {
         <div v-else class="whitespace-pre-wrap" v-text="text" />
       </div>
       <div v-else class="whitespace-pre-wrap" v-text="text" />
+      <template v-if="docs">
+        <div v-for="(item, index) in docs" :key="index">{{ item }}</div>
+      </template>
     </div>
   </div>
 </template>
