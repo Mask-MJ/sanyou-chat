@@ -6,7 +6,7 @@ import { dateZhCN, zhCN } from 'naive-ui'
   <n-config-provider :locale="zhCN" :date-locale="dateZhCN" class="h-full">
     <NaiveProvider>
       <n-layout class="h-full" has-sider>
-        <n-layout-sider bordered :width="200" :native-scrollbar="false">
+        <n-layout-sider bordered :width="230" :native-scrollbar="false">
           <LayoutSider />
         </n-layout-sider>
         <n-layout>

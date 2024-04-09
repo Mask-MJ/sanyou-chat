@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { fetchChatAPIProcess } from '@/api'
 import type { History, RequestOptions } from '@/stores/chat'
+import type { UploadFileInfo } from 'naive-ui'
 const props = defineProps({
   uuid: { type: Number, required: true }
 })
@@ -23,6 +24,7 @@ const params: any = {
 const dataSources = computed(() => {
   return chatStore.getChatDataByUuid(props.uuid)?.data || []
 })
+const pdf = computed(() => chatStore.getChatDataByUuid(props.uuid)?.pdf)
 const buttonDisabled = computed(() => {
   if (['3', '4', '5'].includes(menuValue.value)) {
     // 判断是否上传文件
@@ -93,7 +95,6 @@ const handleSubmit = async () => {
         let chunk = responseText.substring(6)
         try {
           const data = JSON.parse(chunk)
-          console.log(data)
           if (['3', '4', '5'].includes(menuValue.value)) {
             chatStore.addChatByUuid(props.uuid, {
               inversion: false,
@@ -129,9 +130,42 @@ const handleStop = () => {
     loading.value = false
   }
 }
-const handleBeforeUpload = () => {
+const handleBeforeUpload = (data: { file: UploadFileInfo; fileList: UploadFileInfo[] }) => {
+  const typeList = [
+    'html',
+    'md',
+    'json',
+    'csv',
+    'pdf',
+    'png',
+    'jpg',
+    'jpeg',
+    'bmp',
+    'eml',
+    'msg',
+    'rst',
+    'rtf',
+    'txt',
+    'xml',
+    'doc',
+    'docx',
+    'epub',
+    'odt',
+    'ppt',
+    'pptx',
+    'tsv',
+    'htm'
+  ]
+  // 判断是否上传文件的后缀名是否在typeList中
+  if (!typeList.includes(data.file.file?.name?.split('.').pop() || '')) {
+    const typeName = typeList.join('、')
+    window.$message?.error(`只能上传${typeName}格式的文件，请重新上传`)
+    return false
+  }
+
   loading.value = true
   chatStore.setUploadStatus(true)
+  return true
 }
 const handleUploadFinish = (e: any) => {
   const { response } = e.event.target
@@ -214,7 +248,7 @@ onUnmounted(() => {
             @before-upload="handleBeforeUpload"
             @finish="handleUploadFinish"
           >
-            <NButton type="primary" :loading="loading">
+            <NButton type="primary" :loading="loading" :disabled="Boolean(pdf)">
               <template #icon>
                 <i class="i-ant-design:upload-outlined"></i>
               </template>

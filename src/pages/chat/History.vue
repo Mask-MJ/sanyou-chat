@@ -22,6 +22,23 @@ const handleDelete = (index: number, event: MouseEvent) => {
   chatStore.deleteHistory(index)
 }
 
+const getIcon = (type: string) => {
+  switch (type) {
+    case '1':
+      return 'i-ant-design:alert-outlined'
+    case '2':
+      return 'i-ant-design:aim-outlined'
+    case '3':
+      return 'i-ant-design:audit-outlined'
+    case '4':
+      return 'i-ant-design:cluster-outlined'
+    case '5':
+      return 'i-ant-design:reconciliation-outlined'
+    default:
+      return 'i-ant-design:read-outlined'
+  }
+}
+
 const getDay = (uuid: number) => {
   return dayjs(uuid).format('YYYY-MM-DD HH:mm:ss')
 }
@@ -47,7 +64,7 @@ const getDay = (uuid: number) => {
                 "
                 @click="handleSelect(item)"
               >
-                <i class="i-ant-design:message-outlined ml-1"></i>
+                <i class="ml-1" :class="getIcon(item.type)"></i>
                 <div
                   class="relative flex-1 overflow-hidden break-all text-ellipsis whitespace-nowrap"
                 >
