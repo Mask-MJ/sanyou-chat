@@ -63,16 +63,24 @@ const handleSubmit = async () => {
     temperature: 0.7,
     query: query.value,
     history,
-    url: '/api/chat/chat'
+    url: '/api/chat'
   }
-  if (['1', '2'].includes(menuValue.value)) {
+  if (menuValue.value === '1') {
     requestOptions.conversation_id = String(props.uuid) || ''
     requestOptions.history_len = -1
+  } else if (menuValue.value === '2') {
+    requestOptions.conversation_id = String(props.uuid) || ''
+    requestOptions.knowledge_base_name = 'samples'
+    requestOptions.top_k = 3
+    requestOptions.score_threshold = 1
+    requestOptions.history_len = -1
+    requestOptions.history_len = -1
+    requestOptions.url = '/api/knowledge_base_chat'
   } else if (['3', '4', '5'].includes(menuValue.value)) {
     requestOptions.knowledge_id = chatStore.getChatDataByUuid(props.uuid)?.knowledge_id
     requestOptions.top_k = 3
     requestOptions.score_threshold = 1
-    requestOptions.url = '/api/chat/file_chat'
+    requestOptions.url = '/api/file_chat'
   }
 
   chatStore.addChatByUuid(props.uuid, {
@@ -95,7 +103,7 @@ const handleSubmit = async () => {
         let chunk = responseText.substring(6)
         try {
           const data = JSON.parse(chunk)
-          if (['3', '4', '5'].includes(menuValue.value)) {
+          if (['2', '3', '4', '5'].includes(menuValue.value)) {
             chatStore.addChatByUuid(props.uuid, {
               inversion: false,
               dateTime: new Date().toLocaleString(),
@@ -175,6 +183,15 @@ const handleUploadFinish = (e: any) => {
       hasUpload.value = true
       window.$message?.success('上传成功')
       chatStore.setDataByUuid({ uuid: props.uuid, pdf: e.file.file, knowledge_id: result.data.id })
+      loading.value = false
+      if (menuValue.value === '4') {
+        // 上传文件后自动回复
+        query.value = '请帮我提炼文章内容'
+        handleSubmit()
+      } else if (menuValue.value === '5') {
+        query.value = '请帮我翻译该文件'
+        handleSubmit()
+      }
     }
     loading.value = false
   }
@@ -241,7 +258,7 @@ onUnmounted(() => {
           <n-upload
             v-if="['3', '4', '5'].includes(menuValue)"
             class="w-15"
-            action="/api/knowledge_base/upload_temp_docs"
+            action="/knowledge_base/upload_temp_docs"
             :data="params"
             name="files"
             :show-file-list="false"

@@ -13,7 +13,6 @@ interface Props {
   asRawText?: boolean
 }
 const props = defineProps<Props>()
-console.log(props.docs)
 
 const textRef = ref<HTMLElement>()
 
@@ -52,6 +51,10 @@ const text = computed(() => {
   return value
 })
 
+const renderDocs = (doc = '') => {
+  return mdi.render(doc)
+}
+
 function highlightBlock(str: string, lang?: string) {
   return `<pre class="code-block-wrapper"><div class="code-block-header"><span class="code-block-header__lang">${lang}</span><span class="code-block-header__copy">复制</span></div><code class="hljs code-block-body ${lang}">${str}</code></pre>`
 }
@@ -71,7 +74,13 @@ function highlightBlock(str: string, lang?: string) {
       </div>
       <div v-else class="whitespace-pre-wrap" v-text="text" />
       <template v-if="docs">
-        <div v-for="(item, index) in docs" :key="index">{{ item }}</div>
+        <div
+          v-for="(item, index) in docs"
+          class="markdown-body"
+          :class="{ 'markdown-body-generate': loading }"
+          :key="index"
+          v-html="renderDocs(item)"
+        ></div>
       </template>
     </div>
   </div>

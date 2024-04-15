@@ -27,6 +27,7 @@ export interface RequestOptions {
   url: string
   conversation_id?: string
   history_len?: number
+  knowledge_base_name?: string
   max_tokens: number
   model_name: string
   prompt_name: string
