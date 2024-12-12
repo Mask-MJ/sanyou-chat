@@ -27,17 +27,22 @@ export interface RequestOptions {
   url: string
   conversation_id?: string
   history_len?: number
-  knowledge_base_name?: string
-  max_tokens: number
-  model_name: string
-  prompt_name: string
+  kb_name?: string
+  mode?: string
+  prompt_name?: string
+  model_name?: string
+  return_direct?: boolean
+  max_tokens?: number
+  model: string
+  // prompt_name: string
   stream: boolean
   temperature: number
-  query: string
-  history: History[]
+  query?: string
+  messages: History[]
   knowledge_id?: string
   top_k?: number
   score_threshold?: number
+  history?: any[]
 }
 
 export const useChatStore = defineStore('chat', () => {

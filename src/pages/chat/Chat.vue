@@ -51,36 +51,47 @@ const handleSubmit = async () => {
   if (!query.value || query.value.trim() === '') return
 
   controller = new AbortController()
-  const history: History[] = dataSources.value.map((item) => ({
+  const messages: History[] = dataSources.value.map((item) => ({
     role: item.inversion ? 'user' : 'assistant',
     content: item.content
   }))
   let requestOptions: RequestOptions = {
-    max_tokens: 0,
-    model_name: 'chatglm3-6b',
-    prompt_name: 'default',
+    model: 'autodl-tmp-glm-4-9b-chat',
     stream: false,
     temperature: 0.7,
-    query: query.value,
-    history,
-    url: '/api/chat'
+    messages: [...messages, { role: 'user', content: query.value }],
+    url: '/api/chat/chat'
   }
   if (menuValue.value === '1') {
-    requestOptions.conversation_id = String(props.uuid) || ''
-    requestOptions.history_len = -1
+    requestOptions.url = '/api/chat/chat/completions'
+    // requestOptions.conversation_id = String(props.uuid) || ''
+    // requestOptions.history_len = -1
   } else if (menuValue.value === '2') {
-    requestOptions.conversation_id = String(props.uuid) || ''
-    requestOptions.knowledge_base_name = 'samples'
+    // requestOptions.conversation_id = String(props.uuid) || ''
+    requestOptions.kb_name = 'samples'
     requestOptions.top_k = 3
     requestOptions.score_threshold = 1
-    requestOptions.history_len = -1
-    requestOptions.history_len = -1
-    requestOptions.url = '/api/knowledge_base_chat'
+    requestOptions.query = query.value
+    requestOptions.top_k = 3
+    requestOptions.score_threshold = 2
+    requestOptions.mode = 'local_kb'
+    requestOptions.prompt_name = 'default'
+    requestOptions.return_direct = false
+    // "max_tokens": 0,
+    // "prompt_name": "default",
+    // "return_direct": false
+    requestOptions.url = '/api/chat/kb_chat'
   } else if (['3', '4', '5'].includes(menuValue.value)) {
     requestOptions.knowledge_id = chatStore.getChatDataByUuid(props.uuid)?.knowledge_id
     requestOptions.top_k = 3
-    requestOptions.score_threshold = 1
-    requestOptions.url = '/api/file_chat'
+    requestOptions.model_name = 'autodl-tmp-glm-4-9b-chat'
+    requestOptions.query = query.value
+    requestOptions.history = messages
+    requestOptions.max_tokens = 0
+    requestOptions.temperature = 0.01
+    requestOptions.score_threshold = 2
+    requestOptions.prompt_name = 'default'
+    requestOptions.url = '/api/chat/file_chat'
   }
 
   chatStore.addChatByUuid(props.uuid, {
@@ -96,14 +107,24 @@ const handleSubmit = async () => {
   try {
     await fetchChatAPIProcess<RequestOptions>({
       ...requestOptions,
-      signal: controller.signal,
+      // signal: controller.signal,
       onDownloadProgress: ({ event }) => {
         const xhr = event.target
         const { responseText } = xhr
-        let chunk = responseText.substring(6)
         try {
-          const data = JSON.parse(chunk)
-          if (['2', '3', '4', '5'].includes(menuValue.value)) {
+          if (menuValue.value === '2') {
+            const data = JSON.parse(JSON.parse(responseText))
+            chatStore.addChatByUuid(props.uuid, {
+              inversion: false,
+              dateTime: new Date().toLocaleString(),
+              content: data.choices[0].message.content || '',
+              docs: data.docs,
+              error: false,
+              requestOptions
+            })
+          } else if (['3', '4', '5'].includes(menuValue.value)) {
+            let chunk = responseText.substring(6)
+            const data = JSON.parse(chunk)
             chatStore.addChatByUuid(props.uuid, {
               inversion: false,
               dateTime: new Date().toLocaleString(),
@@ -113,10 +134,11 @@ const handleSubmit = async () => {
               requestOptions
             })
           } else {
+            const data = JSON.parse(responseText)
             chatStore.addChatByUuid(props.uuid, {
               inversion: false,
               dateTime: new Date().toLocaleString(),
-              content: data.text || '',
+              content: data.choices[0].message.content || '',
               error: false,
               requestOptions
             })
@@ -258,7 +280,7 @@ onUnmounted(() => {
           <n-upload
             v-if="['3', '4', '5'].includes(menuValue)"
             class="w-15"
-            action="/knowledge_base/upload_temp_docs"
+            action="/api/knowledge_base/upload_temp_docs"
             :data="params"
             name="files"
             :show-file-list="false"
